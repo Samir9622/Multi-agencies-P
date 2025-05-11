@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-agencies-N Launchpad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .launchpad-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .launch-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .launch-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
+https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css
+// Sample JavaScript for dynamic content loading
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch agencies data
+    fetchAgencies();
+    
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+async function fetchAgencies() {
+    try {
+        const response = await fetch('/api/agencies');
+        const agencies = await response.json();
+        renderAgencies(agencies);
+    } catch (error) {
+        console.error('Error fetching agencies:', error);
+        // Fallback to static data if API fails
+        renderAgencies(staticAgencies);
+    }
+}
+
+function renderAgencies(agencies) {
+    const container = document.getElementById('launchpad-container');
+    container.innerHTML = '';
+    
+    agencies.forEach(agency => {
+        const card = document.createElement('div');
+        card.className = 'launch-card p-4';
+        card.innerHTML = `
+            <div class="agency-icon mb-3 text-center">
+                <i class="${agency.icon} fa-3x" style="color: ${agency.color}"></i>
+            </div>
+            <h3 class="text-center">${agency.name}</h3>
+            <p class="text-muted">${agency.description}</p>
+            <button class="btn btn-primary w-100 access-btn" 
+                    data-agency-id="${agency.id}"
+                    data-bs-toggle="tooltip" 
+                    title="Access ${agency.name}">
+                Launch
+            </button>
+        `;
+        container.appendChild(card);
+    });
+    
+    // Add event listeners to buttons
+    document.querySelectorAll('.access-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const agencyId = this.getAttribute('data-agency-id');
+            accessAgency(agencyId);
+        });
+    });
+}
+// Sample server.js for backend functionality
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+// Mock database
+const agencies = [
+    { id: 1, name: 'Finance Department', icon: 'fas fa-coins', color: '#27ae60', description: 'Financial operations and accounting' },
+    { id: 2, name: 'HR Management', icon: 'fas fa-users', color: '#2980b9', description: 'Human resources and personnel' },
+    { id: 3, name: 'Operations', icon: 'fas fa-cogs', color: '#f39c12', description: 'Daily business operations' },
+    { id: 4, name: 'IT Services', icon: 'fas fa-server', color: '#8e44ad', description: 'Technical support and infrastructure' }
+];
+
+// API Endpoints
+app.get('/api/agencies', (req, res) => {
+    res.json(agencies);
+});
+
+app.post('/api/access', (req, res) => {
+    const { agencyId, userId } = req.body;
+    // In a real app, verify user permissions here
+    res.json({ success: true, redirectUrl: `/agency/${agencyId}` });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+// Search functionality
+document.getElementById('search-input').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.launch-card');
+    
+    cards.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        const desc = card.querySelector('p').textContent.toLowerCase();
+        if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
